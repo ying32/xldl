@@ -144,22 +144,6 @@ func (c *DownTaskParam) SetDefault() {
 	c.IsResume = 1
 }
 
-func (c *DownTaskParam) GetParam(wstrUrl, wstrFileName, wstrSavePath string) *DownTaskParam {
-	ubytes := syscall.StringToUTF16(wstrUrl)
-	for i := 0; i < len(ubytes); i++ {
-		c.szTaskUrl[i] = ubytes[i]
-	}
-	ubytes = syscall.StringToUTF16(wstrFileName)
-	for i := 0; i < len(ubytes); i++ {
-		c.szFilename[i] = ubytes[i]
-	}
-	ubytes = syscall.StringToUTF16(wstrSavePath)
-	for i := 0; i < len(ubytes); i++ {
-		c.szSavePath[i] = ubytes[i]
-	}
-	return c
-}
-
 func XL_Init() bool {
 	ret, _, _ := xl_Init.Call()
 	return ret != 0

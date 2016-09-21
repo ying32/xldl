@@ -15,7 +15,8 @@ import (
 	"os"
 
 	"time"
-	"xldl"
+
+	"github.com/ying32/xldl"
 
 	"os/exec"
 	"path/filepath"

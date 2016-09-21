@@ -3,9 +3,15 @@
 // api说明见：http://open.xunlei.com/wiki/api_doc.html#1
 package xldl
 
+import (
+	"syscall"
+)
+
 type XLTask struct {
-	hander uintptr
-	url    string
+	hander   uintptr
+	Url      string
+	FileName string
+	SavePath string
 }
 
 type XLDownloader struct {
@@ -50,7 +56,7 @@ func (self *XLTask) Delete() bool {
 		return false
 	}
 	ret := XL_DeleteTask(self.hander)
-	self.hander = 0;
+	self.hander = 0
 	return ret
 }
 
@@ -69,14 +75,21 @@ func (self *XLDownloader) AddTask(wstrUrl, wstrFileName, wstrSavePath string) *X
 	}
 	param := new(DownTaskParam)
 	param.SetDefault()
-	xltask := &XLTask{XL_CreateTask(param.GetParam(wstrUrl, wstrFileName, wstrSavePath)), wstrUrl}
+
+	copy(param.szTaskUrl[:], syscall.StringToUTF16(wstrUrl))
+	copy(param.szFilename[:], syscall.StringToUTF16(wstrFileName))
+	copy(param.szSavePath[:], syscall.StringToUTF16(wstrSavePath))
+
+	xltask := &XLTask{0, wstrUrl, wstrFileName, wstrSavePath}
+	xltask.hander = XL_CreateTask(param)
 	self.Tasks[wstrUrl] = xltask
 	return xltask
 }
 
 func (self *XLDownloader) Remove(task *XLTask) {
-	if _, ok := self.Tasks[task.url]; ok {
-		self.Tasks[task.url] = nil
+	if _, ok := self.Tasks[task.Url]; ok {
+		self.Tasks[task.Url] = nil
+		delete(self.Tasks, task.Url)
 	}
 	task.Delete()
 }
