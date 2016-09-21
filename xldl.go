@@ -12,6 +12,7 @@ type XLTask struct {
 	Url      string
 	FileName string
 	SavePath string
+	param    *DownTaskParam
 }
 
 type XLDownloader struct {
@@ -67,6 +68,13 @@ func (self *XLTask) Info() (*DownTaskInfo, bool) {
 	return XL_QueryTaskInfoEx(self.hander)
 }
 
+func (self *XLTask) DeleteTempFile() bool {
+	if self.param == nil {
+		return false
+	}
+	return XL_DelTempFile(self.param)
+}
+
 /* XLDownloader */
 
 func (self *XLDownloader) AddTask(wstrUrl, wstrFileName, wstrSavePath string) *XLTask {
@@ -80,7 +88,7 @@ func (self *XLDownloader) AddTask(wstrUrl, wstrFileName, wstrSavePath string) *X
 	copy(param.szFilename[:], syscall.StringToUTF16(wstrFileName))
 	copy(param.szSavePath[:], syscall.StringToUTF16(wstrSavePath))
 
-	xltask := &XLTask{0, wstrUrl, wstrFileName, wstrSavePath}
+	xltask := &XLTask{0, wstrUrl, wstrFileName, wstrSavePath, param}
 	xltask.hander = XL_CreateTask(param)
 	self.Tasks[wstrUrl] = xltask
 	return xltask

@@ -32,6 +32,7 @@ func main() {
 	}
 	defer xldl.UnInitXLEngine()
 	dloader := xldl.NewXLDownloader()
+
 	task := dloader.AddTask("http://sw.bos.baidu.com/sw-search-sp/software/19de58890ffb8/QQ_8.6.18804.0_setup.exe", "QQ_8.6.18804.0_setup.exe", path)
 	fmt.Println("任务启动：", task.Start())
 
@@ -39,7 +40,7 @@ func main() {
 		var exit string
 		for {
 			fmt.Scan(&exit)
-			if exit == "exit" {
+			if exit == "q" {
 				exitLoop = true
 				break
 			}
@@ -55,4 +56,5 @@ func main() {
 	}
 	task.Stop()
 	task.Delete()
+	fmt.Println("删除：", task.DeleteTempFile())
 }

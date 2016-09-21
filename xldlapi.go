@@ -8,36 +8,29 @@ import (
 )
 
 var (
-	xldldll          = syscall.NewLazyDLL("xldl.dll")
-	xl_Init          = xldldll.NewProc("XL_Init")
-	xl_UnInit        = xldldll.NewProc("XL_UnInit")
-	xl_CreateTask    = xldldll.NewProc("XL_CreateTask")
-	xl_DeleteTask    = xldldll.NewProc("XL_DeleteTask")
-	xl_StartTask     = xldldll.NewProc("XL_StartTask")
-	xl_StopTask      = xldldll.NewProc("XL_StopTask")
-	xl_ForceStopTask = xldldll.NewProc("XL_ForceStopTask")
+	xldldll                   = syscall.NewLazyDLL("xldl.dll")
+	xl_Init                   = xldldll.NewProc("XL_Init")
+	xl_UnInit                 = xldldll.NewProc("XL_UnInit")
+	xl_CreateTask             = xldldll.NewProc("XL_CreateTask")
+	xl_DeleteTask             = xldldll.NewProc("XL_DeleteTask")
+	xl_StartTask              = xldldll.NewProc("XL_StartTask")
+	xl_StopTask               = xldldll.NewProc("XL_StopTask")
+	xl_ForceStopTask          = xldldll.NewProc("XL_ForceStopTask")
+	xl_QueryTaskInfoEx        = xldldll.NewProc("XL_QueryTaskInfoEx")
+	xl_DelTempFile            = xldldll.NewProc("XL_DelTempFile")
+	xl_SetSpeedLimit          = xldldll.NewProc("XL_SetSpeedLimit")
+	xl_SetUploadSpeedLimit    = xldldll.NewProc("XL_SetUploadSpeedLimit")
+	xl_SetProxy               = xldldll.NewProc("XL_SetProxy")
+	xl_SetUserAgent           = xldldll.NewProc("XL_SetUserAgent")
+	xl_ParseThunderPrivateUrl = xldldll.NewProc("XL_ParseThunderPrivateUrl")
+	xl_GetFileSizeWithUrl     = xldldll.NewProc("XL_GetFileSizeWithUrl")
+	xl_SetFileIdAndSize       = xldldll.NewProc("XL_SetFileIdAndSize")
 
-	//	xl_QueryTaskInfo          = xldldll.NewProc("XL_QueryTaskInfo")
+	//	xl_SetAdditionInfo        = xldldll.NewProc("XL_SetAdditionInfo")
 
-	xl_QueryTaskInfoEx = xldldll.NewProc("XL_QueryTaskInfoEx")
-
-	//	xl_DelTempFile            = xldldll.NewProc("XL_DelTempFile")
-
-	xl_SetSpeedLimit       = xldldll.NewProc("XL_SetSpeedLimit")
-	xl_SetUploadSpeedLimit = xldldll.NewProc("XL_SetUploadSpeedLimit")
-
-	//	xl_SetProxy               = xldldll.NewProc("XL_SetProxy")
-
-	xl_SetUserAgent = xldldll.NewProc("XL_SetUserAgent")
-
-//	xl_ParseThunderPrivateUrl = xldldll.NewProc("XL_ParseThunderPrivateUrl")
-//	xl_GetFileSizeWithUrl     = xldldll.NewProc("XL_GetFileSizeWithUrl")
-//	xl_SetFileIdAndSize       = xldldll.NewProc("XL_SetFileIdAndSize")
-//	xl_SetAdditionInfo        = xldldll.NewProc("XL_SetAdditionInfo")
-
-//	xl_CreateTaskByURL        = xldldll.NewProc("XL_CreateTaskByURL")
-//	xl_CreateTaskByThunder    = xldldll.NewProc("XL_CreateTaskByThunder")
-//	xl_CreateBTTaskByThunder  = xldldll.NewProc("XL_CreateBTTaskByThunder")
+	xl_CreateTaskByURL       = xldldll.NewProc("XL_CreateTaskByURL")
+	xl_CreateTaskByThunder   = xldldll.NewProc("XL_CreateTaskByThunder")
+	xl_CreateBTTaskByThunder = xldldll.NewProc("XL_CreateBTTaskByThunder")
 )
 
 const (
@@ -144,6 +137,40 @@ func (c *DownTaskParam) SetDefault() {
 	c.IsResume = 1
 }
 
+type DOWN_PROXY_TYPE int32
+
+const (
+	PROXY_TYPE_IE     = 0
+	PROXY_TYPE_HTTP   = 1
+	PROXY_TYPE_SOCK4  = 2
+	PROXY_TYPE_SOCK5  = 3
+	PROXY_TYPE_FTP    = 4
+	PROXY_TYPE_UNKOWN = 255
+)
+
+type DOWN_PROXY_AUTH_TYPE int32
+
+const (
+	PROXY_AUTH_NONE = 0 + iota
+	PROXY_AUTH_AUTO
+	PROXY_AUTH_BASE64
+	PROXY_AUTH_NTLM
+	PROXY_AUTH_DEGEST
+	PROXY_AUTH_UNKOWN
+)
+
+type DOWN_PROXY_INFO struct {
+	IEProxy int32
+	Proxy   int32
+	PType   DOWN_PROXY_TYPE
+	AType   DOWN_PROXY_AUTH_TYPE
+	Host    [2048]uint16
+	Port    int32
+	User    [50]uint16
+	Pwd     [50]uint16
+	Domain  [2048]uint16
+}
+
 func XL_Init() bool {
 	ret, _, _ := xl_Init.Call()
 	return ret != 0
@@ -196,4 +223,64 @@ func XL_QueryTaskInfoEx(hTask uintptr) (*DownTaskInfo, bool) {
 	info.SetDefault()
 	ret, _, _ := xl_QueryTaskInfoEx.Call(hTask, uintptr(unsafe.Pointer(info)))
 	return info, ret != 0
+}
+
+func XL_SetProxy(stProxyInfo *DOWN_PROXY_INFO) bool {
+	ret, _, _ := xl_SetProxy.Call(uintptr(unsafe.Pointer(stProxyInfo)))
+	return ret != 0
+}
+
+func XL_DelTempFile(stParam *DownTaskParam) bool {
+	ret, _, _ := xl_DelTempFile.Call(uintptr(unsafe.Pointer(stParam)))
+	return ret != 0
+}
+
+func XL_ParseThunderPrivateUrl(pszThunderUrl string) (string, bool) {
+	buffer := make([]uint16, 2084)
+	ret, _, _ := xl_ParseThunderPrivateUrl.Call(
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(pszThunderUrl))),
+		uintptr(unsafe.Pointer(&buffer[0])),
+		2084)
+	return syscall.UTF16ToString(buffer), ret != 0
+}
+
+func XL_GetFileSizeWithUrl(lpURL string) (int64, bool) {
+	var iFileSize int64
+	ret, _, _ := xl_GetFileSizeWithUrl.Call(
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(lpURL))),
+		uintptr(unsafe.Pointer(&iFileSize)))
+	return iFileSize, ret != 0
+}
+
+type FileId [40]byte
+
+func XL_SetFileIdAndSize(hTask uintptr, szFileId FileId, nFileSize uint64) bool {
+	ret, _, _ := xl_SetFileIdAndSize.Call(hTask,
+		uintptr(unsafe.Pointer(&szFileId[0])),
+		uintptr(unsafe.Pointer(&szFileId)))
+	return ret != 0
+}
+
+func XL_CreateTaskByURL(url, path, filename string, IsResume int32) uintptr {
+	ret, _, _ := xl_CreateTaskByURL.Call(
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(url))),
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(path))),
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(filename))),
+		uintptr(IsResume))
+	return ret
+}
+
+func XL_CreateTaskByThunder(pszUrl, pszFileName, pszReferUrl, pszCharSet, pszCookie string) uint32 {
+	ret, _, _ := xl_CreateTaskByThunder.Call(
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(pszUrl))),
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(pszFileName))),
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(pszReferUrl))),
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(pszCharSet))),
+		uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(pszCookie))))
+	return uint32(ret)
+}
+
+func XL_CreateBTTaskByThunder(pszPath string) uint32 {
+	ret, _, _ := xl_CreateBTTaskByThunder.Call(uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(pszPath))))
+	return uint32(ret)
 }
