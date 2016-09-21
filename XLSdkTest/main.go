@@ -51,6 +51,14 @@ func main() {
 		info, ret := task.Info()
 		if ret {
 			fmt.Printf("TotalSize=%d, Percent=%f, Speed=%d\n", info.TotalSize, info.Percent, info.Speed)
+			switch info.Stat {
+			case xldl.TSC_COMPLETE:
+				fmt.Println("下载完成")
+				task.Delete()
+				return
+			case xldl.TSC_ERROR:
+				fmt.Println("下载错误。")
+			}
 		}
 		time.Sleep(time.Millisecond * 500)
 	}
