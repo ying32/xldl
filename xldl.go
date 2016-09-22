@@ -103,3 +103,11 @@ func (self *XLDownloader) Remove(task *XLTask) {
 	}
 	task.Delete()
 }
+
+func (self *XLDownloader) RemoveAll() {
+	for k, v := range self.Tasks {
+		v.Stop()
+		v.Delete()
+		delete(self.Tasks, k)
+	}
+}

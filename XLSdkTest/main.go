@@ -65,4 +65,5 @@ func main() {
 	task.Stop()
 	task.Delete()
 	fmt.Println("删除：", task.DeleteTempFile())
+	dloader.RemoveAll()
 }
