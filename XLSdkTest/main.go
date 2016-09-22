@@ -31,9 +31,9 @@ func main() {
 		return
 	}
 	defer xldl.UnInitXLEngine()
-	dloader := xldl.NewXLDownloader()
+	dloader := xldl.NewXLDownloader(path)
 
-	task := dloader.AddTask("http://sw.bos.baidu.com/sw-search-sp/software/19de58890ffb8/QQ_8.6.18804.0_setup.exe", "QQ_8.6.18804.0_setup.exe", path)
+	task := dloader.AddTask("http://sw.bos.baidu.com/sw-search-sp/software/19de58890ffb8/QQ_8.6.18804.0_setup.exe", "QQ_8.6.18804.0_setup.exe")
 	fmt.Println("任务启动：", task.Start())
 
 	go func() {

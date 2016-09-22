@@ -16,11 +16,13 @@ type XLTask struct {
 }
 
 type XLDownloader struct {
-	Tasks map[string]*XLTask
+	Tasks    map[string]*XLTask
+	SavePath string
 }
 
-func NewXLDownloader() *XLDownloader {
+func NewXLDownloader(savePath string) *XLDownloader {
 	dloader := &XLDownloader{}
+	dloader.SavePath = savePath
 	dloader.Tasks = make(map[string]*XLTask)
 	return dloader
 }
@@ -77,7 +79,7 @@ func (self *XLTask) DeleteTempFile() bool {
 
 /* XLDownloader */
 
-func (self *XLDownloader) AddTask(wstrUrl, wstrFileName, wstrSavePath string) *XLTask {
+func (self *XLDownloader) AddTask(wstrUrl, wstrFileName string) *XLTask {
 	if v, ok := self.Tasks[wstrUrl]; ok {
 		return v
 	}
@@ -86,9 +88,9 @@ func (self *XLDownloader) AddTask(wstrUrl, wstrFileName, wstrSavePath string) *X
 
 	copy(param.szTaskUrl[:], syscall.StringToUTF16(wstrUrl))
 	copy(param.szFilename[:], syscall.StringToUTF16(wstrFileName))
-	copy(param.szSavePath[:], syscall.StringToUTF16(wstrSavePath))
+	copy(param.szSavePath[:], syscall.StringToUTF16(self.SavePath))
 
-	xltask := &XLTask{0, wstrUrl, wstrFileName, wstrSavePath, param}
+	xltask := &XLTask{0, wstrUrl, wstrFileName, self.SavePath, param}
 	xltask.hander = XL_CreateTask(param)
 	self.Tasks[wstrUrl] = xltask
 	return xltask
