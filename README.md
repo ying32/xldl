@@ -4,7 +4,7 @@ Xunlei download engine SDK
 迅雷下载引擎SDK Go语言版
 
 使用方法：
-```golang  
+```go
 // XLSdkTest project main.go
 // 迅雷下载sdk 翻译by: ying32  qq:1444386932
 // api说明见：http://open.xunlei.com/wiki/api_doc.html#1
