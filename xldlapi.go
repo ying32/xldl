@@ -72,41 +72,75 @@ const (
 
 // 他按4字节对齐的，然迅雷要求按1字节对齐，so下面两个有问题了，要换种方式了
 type DownTaskInfo struct {
-	Stat           DOWN_TASK_STATUS
-	FailCode       TASK_ERROR_TYPE
-	Filename       [MAX_PATH]uint16
-	Reserved0      [MAX_PATH]uint16
-	TotalSize      int64   // 该任务总大小(字节)
-	TotalDownload  int64   // 下载有效字节数(可能存在回退的情况)
-	Percent        float32 // 下载进度
-	reserved0      int32
-	SrcTotal       int32 // 总资源数
-	SrcUsing       int32 // 可用资源数
-	reserved1      int32
-	reserved2      int32
-	reserved3      int32
-	reserved4      int32
-	reserved5      int64
-	DonationP2P    int64 // p2p贡献字节数
-	reserved6      int64
-	DonationOrgin  int64 // 原始资源共享字节数
-	DonationP2S    int64 // 镜像资源共享字节数
-	reserved7      int64
-	reserved8      int64
-	Speed          int32   // 即时速度(字节/秒)
-	SpeedP2S       int32   // 即时速度(字节/秒)
-	SpeedP2P       int32   // 即时速度(字节/秒)
-	IsOriginUsable bool    // 原始资源是否有效
-	HashPercent    float32 // 现不提供该值
-	IsCreatingFile bool    // 是否正在创建文件
-	reserved       [64]uint32
+	Stat          DOWN_TASK_STATUS
+	FailCode      TASK_ERROR_TYPE
+	Filename      [MAX_PATH]uint16
+	Reserved0     [MAX_PATH]uint16
+	TotalSize     int64   // 该任务总大小(字节)
+	TotalDownload int64   // 下载有效字节数(可能存在回退的情况)
+	Percent       float32 // 下载进度
+	reserved0     int32
+	SrcTotal      int32 // 总资源数
+	SrcUsing      int32 // 可用资源数
+	reserved1     int32
+	reserved2     int32
+	reserved3     int32
+	reserved4     int32
+	reserved5     int64
+	DonationP2P   int64 // p2p贡献字节数
+	reserved6     int64
+	DonationOrgin int64 // 原始资源共享字节数
+	DonationP2S   int64 // 镜像资源共享字节数
+	reserved7     int64
+	reserved8     int64
+	Speed         int32 // 即时速度(字节/秒)
+	SpeedP2S      int32 // 即时速度(字节/秒)
+	SpeedP2P      int32 // 即时速度(字节/秒)
+	// 下面要按1字节对齐就得换种方式了
+	// IsOriginUsable bool    // 原始资源是否有效
+	// HashPercent    float32 // 现不提供该值
+	// IsCreatingFile bool    // 是否正在创建文件
+	value    [6]byte
+	reserved [64]uint32
 }
+
+func (c *DownTaskInfo) IsOriginUsable() bool {
+	if c.value[0] == 1 {
+		return true
+	}
+	return false
+}
+
+func (c *DownTaskInfo) SetIsOriginUsable(val bool) {
+	if val {
+		c.value[0] = 1
+	} else {
+		c.value[0] = 0
+	}
+}
+
+func (c *DownTaskInfo) IsCreatingFile() bool {
+	if c.value[5] == 1 {
+		return true
+	}
+	return false
+}
+
+func (c *DownTaskInfo) SetIsCreatingFile(val bool) {
+	if val {
+		c.value[5] = 1
+	} else {
+		c.value[5] = 0
+	}
+}
+
+//--------------------------------------------------
 
 func (c *DownTaskInfo) SetDefault() {
 	c.Stat = TSC_PAUSE
 	c.FailCode = TASK_ERROR_UNKNOWN
 	c.Percent = 0.0
-	c.IsOriginUsable = false
+	c.SetIsOriginUsable(false)
 	c.HashPercent = 0
 }
 
