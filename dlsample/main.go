@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
 	"path/filepath"
 
@@ -28,7 +29,7 @@ func main() {
 	file, _ := exec.LookPath(os.Args[0])
 	path := filepath.Dir(file)
 
-	dloader = xldl.NewXLDownloader(path)
+	dloader := xldl.NewXLDownloader(path)
 	defer dloader.RemoveAll()
 
 	http.HandleFunc("/", homeHandler)

@@ -141,7 +141,6 @@ func (c *DownTaskInfo) SetDefault() {
 	c.FailCode = TASK_ERROR_UNKNOWN
 	c.Percent = 0.0
 	c.SetIsOriginUsable(false)
-	c.HashPercent = 0
 }
 
 type DownTaskParam struct {
